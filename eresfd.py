@@ -43,7 +43,6 @@ from prepare_wider_data import wider_data_file
 
 from data.config import cfg
 from models.eresfd import build_model
-#from EXTD_32 import build_extd
 from layers.modules.multibox_loss import MultiBoxLoss
 from data.factory import dataset_factory, detection_collate
 import wider_test
@@ -55,14 +54,14 @@ parser = argparse.ArgumentParser(description='Trains ResNeXt on CIFAR or ImageNe
                                  formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 
 # Optimization options
-parser.add_argument('--epochs', type=int, default=201, help='Number of epochs to train.') #default was 100
+parser.add_argument('--epochs', type=int, default=200, help='Number of epochs to train.') #default was 100
 parser.add_argument('--batch_size', type=int, default=8, help='Batch size.')
 parser.add_argument('--learning_rate', type=float, default=0.001, help='The Learning Rate.')
 parser.add_argument('--momentum', type=float, default=0.9, help='Momentum.')
 parser.add_argument('--decay', type=float, default=0.0005, help='Weight decay (L2 penalty).')
-parser.add_argument('--schedule', type=int, nargs='+', default=[50, 100, 200, 220],
+parser.add_argument('--schedule', type=int, nargs='+', default=[50, 100],
                     help='Decrease learning rate at these epochs.')
-parser.add_argument('--gammas', type=float, nargs='+', default=[0.1, 0.1, 10, 0.1],
+parser.add_argument('--gammas', type=float, nargs='+', default=[0.1, 0.1],
                     help='LR is multiplied by gamma on schedule, number of gammas should be equal to schedule')
 parser.add_argument('--start_epoch', default=0, type=int, metavar='N', help='manual epoch number (useful on restarts)')
 # Acceleration
@@ -75,11 +74,8 @@ parser.add_argument('--epoch_prune', type=int, default=5, help='compress layer o
 
 args = parser.parse_args()
 args.use_cuda = args.ngpu > 0 and torch.cuda.is_available()
-# Set the seed to a fixed number, for example, 42.
 args.manualSeed = 42
 
-#if args.manualSeed is None:
-#    args.manualSeed = random.randint(1, 10000)
 random.seed(args.manualSeed)
 torch.manual_seed(args.manualSeed)
 if args.use_cuda:
@@ -131,7 +127,6 @@ def main():
     # Main loop
 
     for epoch in range(args.start_epoch, args.epochs):
-        #current_learning_rate = cos(optimizer, epoch, args.epochs, args.learning_rate, 30, 0.0001) #learning rate scheduler
         current_learning_rate = step(optimizer, epoch, args.gammas, args.schedule)
 
         if os.path.exists('./weights/20eRes{}.pth'.format(epoch-1)):
@@ -141,7 +136,6 @@ def main():
             print('Optimizer state reset')
 
         losses = 0
-        #pruned_net = build_extd('train', cfg.NUM_CLASSES)
         train(train_loader, net, criterion, optimizer, epoch, losses, current_learning_rate, 0.2)
         calc(net)
         
@@ -168,7 +162,6 @@ def train(train_loader, model, criterion, optimizer, epoch, losses, current_lear
         # compute output
         output = model(input)
 
-        # compute gradient and do SGD step
         optimizer.zero_grad()
         loss_l, loss_c = wrapper(input, model, criterion, targets)
         loss = loss_l + loss_c # stress more on loss_l
@@ -202,20 +195,6 @@ def step(optimizer, epoch, gammas, schedule):
         param_group['lr'] = lr
     return lr
 
-
-def cos(optimizer, epoch, max_epochs, initial_lr, restart_epochs, final_lr):
-    #Cosine annealing learning rate scheduler with restarts
-    progress = epoch / max_epochs
-    num_restarts = math.ceil(progress)
-    epoch_in_cycle = epoch % restart_epochs
-    cycle_progress = epoch_in_cycle / restart_epochs
-    lr = final_lr + 0.5 * (initial_lr - final_lr) * (1 + math.cos(math.pi * cycle_progress))
-
-    for param_group in optimizer.param_groups:
-        param_group['lr'] = lr
-
-    return lr
-
 def wrapper(images, net, criterion, targets):
     outputs = net(images)
     total_loss_l = 0
@@ -239,4 +218,3 @@ def calc(model):
 
 if __name__ == '__main__':
     main()  
-    subprocess.run(["python", "stop.py"])
