@@ -1,6 +1,0 @@
-libsm6
-libxext6
-libxrender1
-libfontconfig1
-libglib2.0
-python3-tk
