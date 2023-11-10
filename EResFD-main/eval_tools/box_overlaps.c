@@ -4,14 +4,14 @@
 {
     "distutils": {
         "depends": [
-            "/home/gkrispanis/anaconda3/envs/gpu/lib/python3.11/site-packages/numpy/core/include/numpy/arrayobject.h",
-            "/home/gkrispanis/anaconda3/envs/gpu/lib/python3.11/site-packages/numpy/core/include/numpy/arrayscalars.h",
-            "/home/gkrispanis/anaconda3/envs/gpu/lib/python3.11/site-packages/numpy/core/include/numpy/ndarrayobject.h",
-            "/home/gkrispanis/anaconda3/envs/gpu/lib/python3.11/site-packages/numpy/core/include/numpy/ndarraytypes.h",
-            "/home/gkrispanis/anaconda3/envs/gpu/lib/python3.11/site-packages/numpy/core/include/numpy/ufuncobject.h"
+            "./anaconda3/envs/gpu/lib/python3.11/site-packages/numpy/core/include/numpy/arrayobject.h",
+            "./anaconda3/envs/gpu/lib/python3.11/site-packages/numpy/core/include/numpy/arrayscalars.h",
+            "./anaconda3/envs/gpu/lib/python3.11/site-packages/numpy/core/include/numpy/ndarrayobject.h",
+            "./anaconda3/envs/gpu/lib/python3.11/site-packages/numpy/core/include/numpy/ndarraytypes.h",
+            "./anaconda3/envs/gpu/lib/python3.11/site-packages/numpy/core/include/numpy/ufuncobject.h"
         ],
         "include_dirs": [
-            "/home/gkrispanis/anaconda3/envs/gpu/lib/python3.11/site-packages/numpy/core/include"
+            "./anaconda3/envs/gpu/lib/python3.11/site-packages/numpy/core/include"
         ],
         "name": "bbox",
         "sources": [
