@@ -56,7 +56,7 @@ parser = argparse.ArgumentParser(description='Trains ResNeXt on CIFAR or ImageNe
                                  formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 
 # Optimization options
-parser.add_argument('--epochs', type=int, default=200, help='Number of epochs to train.') #default was 100
+parser.add_argument('--epochs', type=int, default=20, help='Number of epochs to train.') #default was 100
 parser.add_argument('--batch_size', type=int, default=16, help='Batch size.')
 parser.add_argument('--learning_rate', type=float, default=0.001, help='The Learning Rate.')
 parser.add_argument('--momentum', type=float, default=0.9, help='Momentum.')
@@ -141,7 +141,7 @@ def main():
     pruner.compress()
     pruner._unwrap_model()
 
-    for tepoch in range(15):
+    for tepoch in range(args.epochs):
         current_learning_rate = step(optimizer, tepoch, args.gammas, args.schedule) 
         losses = 0
         train(train_loader, net, criterion, optimizer, tepoch, losses, current_learning_rate, 0)
