@@ -199,20 +199,6 @@ def step(optimizer, epoch, gammas, schedule):
     return lr
 
 
-def cos(optimizer, epoch, max_epochs, initial_lr, restart_epochs, final_lr):
-    #Cosine annealing learning rate scheduler with restarts
-    progress = epoch / max_epochs
-    num_restarts = math.ceil(progress)
-    epoch_in_cycle = epoch % restart_epochs
-    cycle_progress = epoch_in_cycle / restart_epochs
-    lr = final_lr + 0.5 * (initial_lr - final_lr) * (1 + math.cos(math.pi * cycle_progress))
-
-    for param_group in optimizer.param_groups:
-        param_group['lr'] = lr
-
-    return lr
-
-
 def calc(model):
     total_params = 0
     zero_params = 0
