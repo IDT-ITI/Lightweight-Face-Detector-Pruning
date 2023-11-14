@@ -14,7 +14,6 @@ import math
 
 import numpy as np
 from scipy.spatial import distance
-#imports from face detection
 
 import os
 import copy
@@ -61,9 +60,9 @@ parser.add_argument('--batch_size', type=int, default=16, help='Batch size.')
 parser.add_argument('--learning_rate', type=float, default=0.001, help='The Learning Rate.')
 parser.add_argument('--momentum', type=float, default=0.9, help='Momentum.')
 parser.add_argument('--decay', type=float, default=0.0005, help='Weight decay (L2 penalty).')
-parser.add_argument('--schedule', type=int, nargs='+', default=[50, 100],
+parser.add_argument('--schedule', type=int, nargs='+', default=[10],
                     help='Decrease learning rate at these epochs.')
-parser.add_argument('--gammas', type=float, nargs='+', default=[0.1, 0.1],
+parser.add_argument('--gammas', type=float, nargs='+', default=[0.1],
                     help='LR is multiplied by gamma on schedule, number of gammas should be equal to schedule')
 parser.add_argument('--start_epoch', default=0, type=int, metavar='N', help='manual epoch number (useful on restarts)')
 # Acceleration
@@ -144,7 +143,7 @@ def main():
     for tepoch in range(args.epochs):
         current_learning_rate = step(optimizer, tepoch, args.gammas, args.schedule) 
         losses = 0
-        train(train_loader, net, criterion, optimizer, tepoch, losses, current_learning_rate, 0)
+        train(train_loader, net, criterion, optimizer, tepoch, losses, current_learning_rate, args.pruning_rate)
         calc(net)
         torch.save(net.state_dict(), f'./weights/{args.save_folder}/{args.save_filename}{tepoch}.pth')
 
@@ -178,7 +177,6 @@ def train(train_loader, model, criterion, optimizer, epoch, losses, current_lear
         if iteration % 100 == 0:
                 tloss = losses / (i + 1)
                 print("[epoch:{}][iter:{}][lr:{:.5f}][rate:{:.5f}] loss_class {:.8f} - loss_reg {:.8f} - total {:.8f}".format(
-                    #epoch, iteration, current_learning_rate, compress_rates_total[epoch], loss_c.item(), loss_l.item(), tloss
                     epoch, iteration, current_learning_rate, compress_rates_total, loss_c.item(), loss_l.item(), tloss
                 ))
 
