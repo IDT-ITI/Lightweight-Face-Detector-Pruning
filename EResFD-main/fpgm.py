@@ -13,7 +13,6 @@ import numpy as np
 import os
 import copy
 import torch
-import torch.nn.utils.prune as prune
 import sys
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 import os
@@ -61,7 +60,7 @@ parser.add_argument('--start_epoch', default=0, type=int, metavar='N', help='man
 parser.add_argument('--ngpu', type=int, default=1, help='0 = CPU.')
 parser.add_argument('--workers', type=int, default=0, help='number of data loading workers')
 # random seed
-parser.add_argument('--manualSeed', type=int, help='manual seed')
+parser.add_argument('--manualSeed', type=int, default=42, help='manual seed')
 parser.add_argument('--pretrained_model', type=str, default='./weights/ERES.pth', help='path to the pretrained model')
 parser.add_argument('--pruned_eres', type=str, default='./weights/g40eRes', help='path to save pruned weights without epoch number')
 parser.add_argument('--pruning_rate', type=float, default=0.2, help='sparsity per layer')
@@ -70,7 +69,6 @@ parser.add_argument('--epoch_prune', type=int, default=5, help='compress layer o
 
 args = parser.parse_args()
 args.use_cuda = args.ngpu > 0 and torch.cuda.is_available()
-args.manualSeed = 42
 
 random.seed(args.manualSeed)
 torch.manual_seed(args.manualSeed)
@@ -91,13 +89,11 @@ def main():
     train_loader = torch.utils.data.DataLoader(train_dataset, batch_size=args.batch_size, shuffle=True,
                                                num_workers=args.workers, collate_fn=detection_collate, pin_memory=False, generator=torch.Generator(device='cuda')) 
 
-    # Init model, criterion, and optimizer
     net = build_model('train', cfg.NUM_CLASSES, width_mult=0.0625) 
     print('Load network....')
     net.load_state_dict(torch.load(args.pretrained_model))
     print('Network loaded successfully')
 
-    # define loss function (criterion) and optimizer
     criterion = MultiBoxLoss(cfg, 'face', use_cuda)
 
 
