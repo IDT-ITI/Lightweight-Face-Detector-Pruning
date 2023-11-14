@@ -5,9 +5,9 @@ Pruning Lightweight Face Detectors **EXTD** and **EResFD** using NNI's `FPGMPrun
 
 The repository is organized into several key folders:
 
-- `EXTD/`: Contains code and resources specific to the EXTD model.
-- `EResFD/`: Contains code and resources for the EResFD model.
-- `pruned_models/`: A collection of pre-pruned model weights (`.pth` files) for both EXTD and EResFD.
+- `EXTD_Pytorch-master/`: Contains code and resources specific to the EXTD model.
+- `EResFD-main/`: Contains code and resources for the EResFD model.
+- `Pruned Models/`: A collection of pre-pruned model weights (`.pth` files) for both EXTD and EResFD.
 
 ## Prerequisites
 
