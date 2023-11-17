@@ -47,7 +47,7 @@ parser = argparse.ArgumentParser(description='Stop pruning and fine tune the mod
                                  formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 
 # Optimization options
-parser.add_argument('--epochs', type=int, default=300, help='Number of epochs to train.')
+parser.add_argument('--epochs', type=int, default=10, help='Number of epochs to train.')
 parser.add_argument('--batch_size', type=int, default=8, help='Batch size.')
 parser.add_argument('--learning_rate', type=float, default=0.001, help='The Learning Rate.')
 parser.add_argument('--momentum', type=float, default=0.9, help='Momentum.')
@@ -124,7 +124,7 @@ def main():
     pruner._unwrap_model()
     print('Model pruned')
 
-    for epoch in range(args.start_epoch, 10):
+    for epoch in range(args.start_epoch, args.epochs):
         current_learning_rate = step(optimizer, epoch, args.gammas, args.schedule)
         train(train_loader, net, criterion, optimizer, epoch, 0, current_learning_rate, args.pruning_rate)
         calc(net)
