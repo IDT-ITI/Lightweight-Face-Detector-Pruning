@@ -1,6 +1,13 @@
 # Lightweight-Face-Detector-Pruning
 
-Pruning Lightweight Face Detectors **EXTD** and **EResFD** using NNI's `FPGMPruner` and `L1NormPruner`
+Pruning Lightweight Face Detectors **EXTD** and **EResFD** using NNI's `FPGMPruner` and `L1NormPruner`.
+
+To ensure compatibility and proper functioning of the pruning scripts, please install the specific version of NNI using the following pip command:
+
+```bash
+pip install nni==3.0rc1
+```
+
 ## Project Structure
 
 The repository is organized into several key folders:
@@ -27,3 +34,4 @@ To execute the pruning process, use the following commands based on the desired 
 - For pruning with the Geometric Median (FPGM) algorithm in the EResFD model:
   ```bash
   python fpgm.py --pruning_rate 0.1 --pruned_eres './weights/eres10'
+  ```
