@@ -27,7 +27,7 @@ The models are trained and evaluated using the WIDER FACE dataset. To use this d
 1. Download the WIDER FACE dataset from [here](https://shuoyang1213.me/WIDERFACE/).
 2. Extract and place the `WIDER` folder in the same directory as the `EXTD` and `EResFD` folders.
 
-## Running the Scripts for Pruning a Model
+## Running the Scripts for Pruning a Face Detector
 
 The pruning script executes the model pruning process as outlined in Section 4.2 of our paper. It prunes and trains the model iteratively for 200 epochs, following which the pruning is halted and the model is fine-tuned for an additional 10 epochs.
 
