@@ -14,7 +14,7 @@ The repository is organized into several key folders:
 
 - `EXTD_Pytorch-master/`: Contains code and resources specific to the EXTD model.
 - `EResFD-main/`: Contains code and resources for the EResFD model.
-- `Pruned_Models/`: A collection of pre-pruned model weights (`.pth` files) for both EXTD and EResFD.
+- `Pruned_Models/`: A collection of pre-pruned model weights (`.pth` files) for both EXTD and EResFD. The pruned models are provided with FPGM and L1 pruning techniques. For instance, `ERES10` refers to the EResFD model pruned with 10% sparsity using the specified technique.
 
 ## Prerequisites
 
@@ -33,6 +33,7 @@ To execute the pruning process, use the following commands based on the desired 
   ```bash
   python fpgm.py --pruning_rate 0.1 --pruned_eres './weights/eres10'
   ```
+Here, `pruning_rate` specifies the sparsity per layer that the user wishes to induce, and `pruned_eres` is the prefix of the file where the pruned models will be saved, such as `pruned_eres5`, `pruned_eres10`, etc.
 
 ## License
 This code is provided for academic, non-commercial use only. Please also check for any restrictions applied in the code parts and datasets used here from other sources. For the materials not covered by any such restrictions, redistribution and use in source and binary forms, with or without modification, are permitted for academic non-commercial use provided that the following conditions are met:
