@@ -61,6 +61,3 @@ booktitle={IEEE/CVF Winter Conference on Applications of Computer Vision Worksho
 ## Acknowledgements
 
 This work was supported by the EU Horizon 2020 programme under grant agreement H2020-951911 AI4Media.
-
-## References
-
