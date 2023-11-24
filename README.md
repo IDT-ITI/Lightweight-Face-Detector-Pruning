@@ -43,7 +43,7 @@ This software is provided by the authors "as is" and any express or implied warr
 
 ## Citation
 
-If you our pruning method or pruned models useful in your work, please cite the following publication where this approach was proposed:
+If you find our pruning method or pruned models useful in your work, please cite the following publication where this approach was proposed:
 
 K. Gkrispanis, N. Gkalelis, V. Mezaris, "Filter-Pruning of Lightweight Face Detectors Using a Geometric Median Criterion", Proc. IEEE/CVF Winter Conference on Applications of Computer Vision Workshops (WACVW 2024), Waikoloa, Hawaii, USA, Jan. 2024.
 
