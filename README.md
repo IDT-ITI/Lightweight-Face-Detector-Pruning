@@ -10,7 +10,7 @@ pip install nni==3.0rc1
 
 ## Project Structure
 
-The repository is organized into several key folders:
+The repository is organized into 3 folders:
 
 - `EXTD_Pytorch-master/`: Contains code and resources specific to the EXTD model.
 - `EResFD-main/`: Contains code and resources for the EResFD model.
@@ -28,6 +28,8 @@ The models are trained and evaluated using the WIDER FACE dataset. To use this d
 2. Extract and place the `WIDER` folder in the same directory as the `EXTD` and `EResFD` folders.
 
 ## Running the Pruning Scripts
+
+The pruning script executes the model pruning process as outlined in Section 4.2 of our paper. It prunes and trains the model iteratively for 200 epochs, following which the pruning is halted and the model is fine-tuned for an additional 10 epochs.
 
 To execute the pruning process, use the following commands based on the desired pruning algorithm. E.g., for pruning with the Geometric Median (FPGM) algorithm the EResFD model:
   ```bash
