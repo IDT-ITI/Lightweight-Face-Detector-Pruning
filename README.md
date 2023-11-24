@@ -14,7 +14,7 @@ The repository is organized into 3 folders:
 
 - `EXTD_Pytorch-master/`: Contains code and resources specific to the EXTD model.
 - `EResFD-main/`: Contains code and resources for the EResFD model.
-- `Pruned_Models/`: A collection of pre-pruned model weights (`.pth` files) for both EXTD and EResFD. The pruned models are provided with FPGM and L1 pruning techniques. For instance, `ERES10` refers to the EResFD model pruned with 10% sparsity using the specified technique.
+- `Pruned_Models/`: A collection of pre-pruned model weights (`.pth` files) for both EXTD and EResFD. The pruned models that are evaluated in Tables 1 and 2 of our paper are provided, i.e. each of the EXTD, EResFD Face Detectors is pruned using one of the FPGM, L1 pruning techniques, for target pruning rates equal to 10%, 20%, 30%, 40% and 50%. The naming convention we follow for the pruned models is straightforward; for instance, `ERES10` refers to the EResFD model pruned with 10% sparsity using the specified technique.
 
 ## Prerequisites
 
