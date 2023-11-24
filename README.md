@@ -29,9 +29,7 @@ The models are trained and evaluated using the WIDER FACE dataset. To use this d
 
 ## Running the Pruning Scripts
 
-To execute the pruning process, use the following commands based on the desired pruning algorithm:
-
-- For pruning with the Geometric Median (FPGM) algorithm in the EResFD model:
+To execute the pruning process, use the following commands based on the desired pruning algorithm. E.g., for pruning with the Geometric Median (FPGM) algorithm the EResFD model:
   ```bash
   python fpgm.py --pruning_rate 0.1 --pruned_eres './weights/eres10'
   ```
