@@ -9,6 +9,7 @@ The repository is organized into 3 folders:
 - `EXTD_Pytorch-master/`: Contains code and resources specific to the EXTD model.
 - `EResFD-main/`: Contains code and resources for the EResFD model.
 - `Pruned_Models/`: A collection of pre-pruned model weights (`.pth` files) for both EXTD and EResFD. The pruned models that are evaluated in Tables 1 and 2 of our paper are provided, i.e. each of the EXTD, EResFD Face Detectors is pruned using one of the FPGM, L1 pruning techniques, for target pruning rates equal to 10%, 20%, 30%, 40% and 50%. The naming convention we follow for the pruned models is straightforward; for instance, `ERES10_FPGM` refers to the EResFD model pruned with 10% sparsity using the FPGM technique.
+- `torchscript/`: All the required files for android integration of the EResFD model using the torchscript framework
 
 ## Prerequisites
 
@@ -40,6 +41,14 @@ To execute the pruning process, use the following commands based on the desired 
   python fpgm.py --pruning_rate 0.1 --pruned_eres './weights/eres10'
   ```
 Here, `fpgm.py` specifies the pruning methd to be used (in this example, FPGM), the value of `pruning_rate` specifies the sparsity per layer that the user wishes to introduce (`0.1` denotes a 10% target pruning rate), and `pruned_eres` is the prefix of the file where the pruned models will be saved, e.g. `pruned_eres10`.
+
+## Android integration
+
+Simply move the convert_to_torchscript.py script inside the EResFD-main/ directory and run it. Make sure to change the path within the script to convert the desired model to torchscript form.
+
+Subsequently, move the created lite_scripted_model.ptl to your app`s asset folder. The EResFD.java file contains a java class that can be used in order to load the model from the assets folder and use it for inference.
+
+Additionally, a sample build.gradle.kts file is provided with the necessary dependencies to build the android app.
 
 ## License
 This code is provided for academic, non-commercial use only. Please also check for any restrictions applied in the code parts and datasets used here from other sources. For the materials not covered by any such restrictions, redistribution and use in source and binary forms, with or without modification, are permitted for academic non-commercial use provided that the following conditions are met:
