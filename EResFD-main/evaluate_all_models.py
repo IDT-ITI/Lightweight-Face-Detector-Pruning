@@ -33,7 +33,7 @@ for model_file in sorted_model_files:
     subprocess.run(["python", "wider_test.py", model_path])
     
     # Evaluate predictions using eval_tools/evaluation.py
-    result = subprocess.run(["python", "eval_tools/evaluation_old.py"], capture_output=True, text=True)
+    result = subprocess.run(["python", "eval_tools/evaluation.py"], capture_output=True, text=True)
     
     # Parse the results
     results = parse_evaluation_output(result.stdout)
