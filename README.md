@@ -25,7 +25,7 @@ The models are trained and evaluated using the WIDER FACE dataset. To use this d
 
 A requirements.txt file is provided with all the necessary python dependencies. Additionaly, the code was developed using Python 3.11.7, CUDA 11.4 and Ubuntu 20.04.06 LTS.
 
-To ensure compatibility and proper functioning of the pruning scripts, please install the specific version of NNI listed in the requirements.txt file.
+To ensure compatibility and proper functioning of the pruning scripts, please install the specific version of NNI listed in the requirements.txt file, using the following command:
 
 ```bash
 pip install -r requirements. txt
