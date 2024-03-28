@@ -2,12 +2,6 @@
 
 Pruning Lightweight Face Detectors **EXTD** and **EResFD** using NNI's `FPGMPruner` and `L1NormPruner`.
 
-To ensure compatibility and proper functioning of the pruning scripts, please install the specific version of NNI using the following pip command:
-
-```bash
-pip install nni==3.0rc1
-```
-
 ## Project Structure
 
 The repository is organized into 3 folders:
@@ -30,6 +24,12 @@ The models are trained and evaluated using the WIDER FACE dataset. To use this d
 ## Dependencies
 
 A requirements.txt file is provided with all the necessary python dependencies. Additionaly, the code was developed using Python 3.11.7, CUDA 11.4 and Ubuntu 20.04.06 LTS.
+
+To ensure compatibility and proper functioning of the pruning scripts, please install the specific version of NNI listed in the requirements.txt file.
+
+```bash
+pip install -r requirements. txt
+```
 
 ## Running the Scripts for Pruning a Face Detector
 
