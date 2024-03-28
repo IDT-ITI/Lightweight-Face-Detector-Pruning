@@ -28,7 +28,7 @@ A requirements.txt file is provided with all the necessary python dependencies. 
 To ensure compatibility and proper functioning of the pruning scripts, please install the specific version of NNI listed in the requirements.txt file, using the following command:
 
 ```bash
-pip install -r requirements. txt
+pip install -r requirements.txt
 ```
 
 ## Running the Scripts for Pruning a Face Detector
