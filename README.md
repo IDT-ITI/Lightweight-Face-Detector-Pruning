@@ -24,9 +24,9 @@ The models are trained and evaluated using the WIDER FACE dataset. To use this d
 
 ## Dependencies
 
-A requirements.txt file is provided with all the necessary python dependencies. Additionaly, the code was developed using Python 3.11.7, CUDA 11.4 and Ubuntu 20.04.06 LTS.
+A requirements.txt file is provided with all the necessary python dependencies. Additionally, the code was developed using Python 3.11.7, CUDA 11.4 and Ubuntu 20.04.06 LTS.
 
-To ensure compatibility and proper functioning of the pruning scripts, please install the specific version of NNI listed in the requirements.txt file, using the following command:
+To ensure compatibility and proper functionality of the pruning scripts, please install the specific versions of the python packages listed in the requirements.txt file, using the following command:
 
 ```bash
 pip install -r requirements.txt
@@ -42,11 +42,11 @@ To execute the pruning process, use the following commands based on the desired 
   ```
 Here, `fpgm.py` specifies the pruning methd to be used (in this example, FPGM), the value of `pruning_rate` specifies the sparsity per layer that the user wishes to introduce (`0.1` denotes a 10% target pruning rate), and `pruned_eres` is the prefix of the file where the pruned models will be saved, e.g. `pruned_eres10`.
 
-## Android integration
+## Android Integration
 
 Simply move the convert_to_torchscript.py script inside the EResFD-main/ directory and run it. Make sure to change the path within the script to convert the desired model to torchscript form.
 
-Subsequently, move the created lite_scripted_model.ptl to your app`s asset folder. The EResFD.java file contains a java class that can be used in order to load the model from the assets folder and use it for inference.
+Subsequently, move the created lite_scripted_model.ptl to your android application`s asset folder. The EResFD.java file contains a java class that can be used in order to load the model from the assets folder and use it for inference.
 
 Additionally, a sample build.gradle.kts file is provided with the necessary dependencies to build the android app.
 
