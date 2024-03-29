@@ -4,16 +4,16 @@ Pruning Lightweight Face Detectors **EXTD** and **EResFD** using NNI's `FPGMPrun
 
 ## Project Structure
 
-The repository is organized into 3 folders:
+The repository is organized into 4 folders:
 
 - `EXTD_Pytorch-master/`: Contains code and resources specific to the EXTD model.
 - `EResFD-main/`: Contains code and resources for the EResFD model.
 - `Pruned_Models/`: A collection of pre-pruned model weights (`.pth` files) for both EXTD and EResFD. The pruned models that are evaluated in Tables 1 and 2 of our paper are provided, i.e. each of the EXTD, EResFD Face Detectors is pruned using one of the FPGM, L1 pruning techniques, for target pruning rates equal to 10%, 20%, 30%, 40% and 50%. The naming convention we follow for the pruned models is straightforward; for instance, `ERES10_FPGM` refers to the EResFD model pruned with 10% sparsity using the FPGM technique.
-- `torchscript/`: All the required files for android deployment of the EResFD model using the torchscript framework
+- `torchscript/`: All the required files for android deployment of the EResFD model (and its pruned versions) using the torchscript framework.
 
 ## Prerequisites
 
-Before running the pruning scripts, users need to prepare the necessary dataset:
+Before running the pruning scripts, the user needs to prepare the necessary dataset:
 
 ### WIDER FACE Dataset
 
