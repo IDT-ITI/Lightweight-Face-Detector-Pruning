@@ -135,7 +135,6 @@ types-PyYAML==6.0.12.10
 typing_extensions==4.5.0
 tzdata==2023.3
 urllib3==1.26.18
-wandb==0.16.3
 wcwidth==0.2.13
 websockets==11.0.3
 Werkzeug==2.3.8
