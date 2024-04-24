@@ -2,19 +2,6 @@ from __future__ import division
 from __future__ import absolute_import
 from __future__ import print_function
 
-#imports already there
-import os, sys, shutil, time, random
-import argparse
-import torch
-import torch.backends.cudnn as cudnn
-import torchvision.datasets as dset
-import torchvision.transforms as transforms
-import matplotlib.pyplot as plt
-import math
-
-import numpy as np
-from scipy.spatial import distance
-#imports from face detection
 
 import os
 import copy
@@ -33,10 +20,14 @@ import torch.utils.data as data
 import numpy as np
 from torch.autograd import Variable
 import torch.backends.cudnn as cudnn
-from nni.algorithms.compression.v2.pytorch.pruning import L1NormPruner
-import subprocess
+import tensorflow as tf
+gpu_devices = tf.config.experimental.list_physical_devices('GPU')
+from tqdm import tqdm
+for device in gpu_devices:
+    tf.config.experimental.set_memory_growth(device, True)
 
-#compile
+
+#complile
 os.system("python3 bbox_setup.py build_ext --inplace")
 print('compile completed')
 
@@ -51,151 +42,138 @@ import wider_test
 import eval_tools.evaluation as evaluation
 import numpy as np
 from argparse import Namespace
-
-parser = argparse.ArgumentParser(description='Trains ResNeXt on CIFAR or ImageNet',
-                                 formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-
-# Optimization options
-parser.add_argument('--epochs', type=int, default=200, help='Number of epochs to train.') #default was 100
-parser.add_argument('--batch_size', type=int, default=16, help='Batch size.')
-parser.add_argument('--learning_rate', type=float, default=0.001, help='The Learning Rate.')
-parser.add_argument('--momentum', type=float, default=0.9, help='Momentum.')
-parser.add_argument('--decay', type=float, default=0.0005, help='Weight decay (L2 penalty).')
-parser.add_argument('--schedule', type=int, nargs='+', default=[50, 100],
-                    help='Decrease learning rate at these epochs.')
-parser.add_argument('--gammas', type=float, nargs='+', default=[0.1, 0.1],
-                    help='LR is multiplied by gamma on schedule, number of gammas should be equal to schedule')
-parser.add_argument('--start_epoch', default=41, type=int, metavar='N', help='manual epoch number (useful on restarts)')
-# Acceleration
-parser.add_argument('--ngpu', type=int, default=1, help='0 = CPU.')
-parser.add_argument('--workers', type=int, default=0, help='number of data loading workers (default: 2)')
-# random seed
-parser.add_argument('--manualSeed', type=int, default=42, help='manual seed')
-
-parser.add_argument('--epoch_prune', type=int, default=5, help='compress layer of model')
-parser.add_argument('--pruning_rate', type=float, default=0.4, help='Pruning rate for the layers')
-parser.add_argument('--save_file_name', type=str, default='40extd', help='Name of the saved file folder')
-
-args = parser.parse_args()
-args.use_cuda = args.ngpu > 0 and torch.cuda.is_available()
-
-random.seed(args.manualSeed)
-torch.manual_seed(args.manualSeed)
-if args.use_cuda:
-    torch.cuda.manual_seed_all(args.manualSeed)
-cudnn.benchmark = True
-use_cuda = True
+from nni.algorithms.compression.v2.pytorch.pruning import L1NormPruner
 
 
-def main():
-
-    # Init dataset
-    print('prepare wider')
-    wider_data_file()
-
-    train_dataset, _ = dataset_factory('face')
-
-    train_loader = torch.utils.data.DataLoader(train_dataset, batch_size=args.batch_size, shuffle=True,
-                                               num_workers=args.workers, collate_fn=detection_collate, pin_memory=False, generator=torch.Generator(device='cuda'))
-
-    net = build_extd('train', cfg.NUM_CLASSES) 
-    print('Load network....')
-    net.load_state_dict(torch.load('./weights/sfd_face.pth'))
-    print('Network loaded successfully')
-
-    criterion = MultiBoxLoss(cfg, 'face', use_cuda)
-
-
-    optimizer = torch.optim.SGD(net.parameters(), lr=args.learning_rate,
-                                 momentum=args.momentum, weight_decay=args.decay) 
-
-    if args.use_cuda:
-        net.cuda()
-        criterion.cuda()
-
-    config_list = [{
-        'sparsity_per_layer' : args.pruning_rate,
-        'op_types' : ['Conv2d'],
-    }, {
-        'exclude' : True,
-        'op_names' : [
-                    'loc.0', 'loc.1', 'loc.2', 'loc.3', 'loc.4', 'loc.5',
-                    'conf.0', 'conf.1', 'conf.2', 'conf.3', 'conf.4', 'conf.5'
-                    ]
-    }]
-
-   
-    # Main loop
-
-    for epoch in range(args.start_epoch, args.epochs):
-        current_learning_rate = step(optimizer, epoch, args.gammas, args.schedule)
-
-        model_filename = f'./weights/{args.model_base_name}{epoch - 1}.pth'
-        if os.path.exists(model_filename):
-            net = build_extd('train', cfg.NUM_CLASSES)
-            net.load_state_dict(torch.load(model_filename))
-            optimizer = torch.optim.SGD(net.parameters(), lr=current_learning_rate, momentum=args.momentum,
-                                        weight_decay=args.decay)
-            print('Optimizer state reset')
-
-        losses = 0
-        train(train_loader, net, criterion, optimizer, epoch, losses, current_learning_rate, args.pruning_rate)
-        calc(net)
-
-        if epoch % args.epoch_prune == 0 or epoch == args.epochs - 1:  # here it prunes
-            pruner = L1NormPruner(net, config_list)
-            pruner.compress()
-            pruner._unwrap_model()
-            print('Model pruned')
-
-            torch.save(net.state_dict(), f'./weights/{args.model_base_name}{epoch}.pth')
-        
-
-
-def train(train_loader, model, criterion, optimizer, epoch, losses, current_learning_rate, compress_rates_total):
-    model.train()
-    iteration = 0
-
-    end = time.time()
-    for i, (input, target) in enumerate(train_loader):
-        
-        if args.use_cuda:
-            target = [ann.cuda() for ann in target]
-            input = input.cuda()
-
-        output = model(input)
-
-        optimizer.zero_grad()
-        loss_l, loss_c = criterion(output, target)
-        loss = loss_l + loss_c # stress more on loss_l
-        loss.backward()
-
-        optimizer.step()
-
-        losses += loss.item()
-        end = time.time()
-
-        if iteration % 100 == 0:
-                tloss = losses / (i + 1)
-                print("[epoch:{}][iter:{}][lr:{:.5f}][rate:{:.5f}] loss_class {:.8f} - loss_reg {:.8f} - total {:.8f}".format(
-                    epoch, iteration, current_learning_rate, compress_rates_total, loss_c.item(), loss_l.item(), tloss
-                ))
-
-        iteration += 1
-
-
-def step(optimizer, epoch, gammas, schedule):
-    #Sets the learning rate to the initial LR decayed by 10 every 30 epochs
-    lr = args.learning_rate
-    assert len(gammas) == len(schedule), "length of gammas and schedule should be equal"
-    for (gamma, step) in zip(gammas, schedule):
-        if (epoch >= step):
-            lr = lr * gamma
-        else:
-            break
+def adjust_learning_rate(optimizer, gamma, step):
+    lr = 1e-4 * (gamma * (step))
     for param_group in optimizer.param_groups:
         param_group['lr'] = lr
-    return lr
+
+
+def compute_flops(model, image_size):
+  import torch.nn as nn
+  flops = 0.
+  input_size = image_size
+  for m in model.modules():
+    if isinstance(m, nn.AvgPool2d) or isinstance(m, nn.MaxPool2d):
+      input_size = input_size / 2.
+    if isinstance(m, nn.Conv2d):
+      if m.groups == 1:
+        flop = (input_size[0] / m.stride[0] * input_size[1] / m.stride[1]) * m.kernel_size[0] ** 2 * m.in_channels * m.out_channels
+      else:
+        flop = (input_size[0] / m.stride[0] * input_size[1] / m.stride[1]) * m.kernel_size[0] ** 2 * ((m.in_channels/m.groups) * (m.out_channels/m.groups) * m.groups)
+      flops += flop
+      if m.stride[0] == 2: input_size = input_size / 2.
+
+  return flops / 1000000000., flops / 1000000
+
+use_cuda = True
+
+def train(net, i, start_epoch=0):
+
+    optimizer = optim.SGD(net.parameters(), lr=1e-4, momentum=0.9, weight_decay=5e-4)
+    criterion = MultiBoxLoss(cfg, 'face', use_cuda)
+    train_dataset, val_dataset = dataset_factory('face')
+
+    train_loader = data.DataLoader(train_dataset, 8,
+                                num_workers=0,
+                                shuffle=False,
+                                collate_fn=detection_collate,
+                                pin_memory=False)
+
+    val_batchsize = 8
+    val_loader = data.DataLoader(val_dataset, val_batchsize,
+                                num_workers=0,
+                                shuffle=False,
+                                collate_fn=detection_collate,
+                                pin_memory=False)
+
+    gflops, mflops = compute_flops(net, np.array([cfg.INPUT_SIZE, cfg.INPUT_SIZE]))
+    print('# of params in Classification model: %d, flops: %.2f GFLOPS, %.2f MFLOPS, image_size: %d' % \
+      (sum([p.data.nelement() for p in net.parameters()]), gflops, mflops,cfg.INPUT_SIZE))
+
+    step_index = 0
+    iteration = 0
+    net.train()
+    for epoch in range(start_epoch, 5):
+        losses = 0
+        for batch_idx, (images, targets) in enumerate(train_loader):
+            if use_cuda:
+                images = images.cuda()
+                targets = [ann.cuda()
+                           for ann in targets]
+            else:
+                images = images
+                targets = [ann for ann in targets]
+
+            if iteration in cfg.LR_STEPS:
+                step_index += 1
+                adjust_learning_rate(optimizer, 0.1, step_index)
+
+            t0 = time.time()
+            out = net(images)
+            # backprop
+            optimizer.zero_grad()
+            loss_l, loss_c = criterion(out, targets)
+            loss = loss_l + loss_c # stress more on loss_l
+            loss_add = loss_l + loss_c
+            loss.backward()
+            optimizer.step()
+            t1 = time.time()
+            losses += loss_add.item()
+
+            if iteration % 100 == 0:
+                tloss = losses / (batch_idx + 1)
+                print("[epoch:{}][iter:{}][lr:{:.5f}] loss_class {:.8f} - loss_reg {:.8f} - total {:.8f}".format(
+                    epoch, iteration, 1e-4, loss_c.item(), loss_l.item(), tloss
+                ))
+
+            iteration += 1
+
+        val(epoch, net, val_loader, criterion, i)
+        if iteration == cfg.MAX_STEPS:
+            break
+    #return net
+
+min_loss = np.inf
+def val(epoch, net, val_loader, criterion, i):
+    net.eval()
+    loc_loss = 0
+    conf_loss = 0
+    step = 0
+    
+    with torch.no_grad():
+        t1 = time.time()
+        for batch_idx, (images, targets) in enumerate(val_loader):
+            if use_cuda:
+                images = images.cuda()
+
+                targets = [ann.cuda() for ann in targets]
+            else:
+                images = Variable(images)
+                targets = [Variable(ann, volatile=True) for ann in targets]
+
+            out = net(images)
+            loss_l, loss_c = criterion(out, targets)
+
+            loc_loss += loss_l.item()
+            conf_loss += loss_c.item()
+            step += 1
+
+        tloss = (loc_loss + conf_loss) / step
+        t2 = time.time()
+        print('Timer: %.4f' % (t2 - t1))
+        print('test epoch:' + repr(epoch) + ' || Loss:%.4f' % (tloss))
+
+        global min_loss
+        if tloss < min_loss:
+            print('Saving best state,epoch', epoch)
+            torch.save(net.state_dict(), './weights/BEST{}.pth'.format(i))
+            min_loss = tloss
+
+import numpy as np
+
 
 def calc(model):
     total_params = 0
@@ -205,9 +183,74 @@ def calc(model):
         zero_params += np.count_nonzero(param.cpu().detach().numpy() == 0)
 
     sparsity = 100. * zero_params / total_params
-    print("Model sparsity after training: {:.2f}%".format(sparsity))
+    print("Model sparsity: {:.2f}%".format(sparsity))
+
+def calc_model_sparsity(model):
+    num_params = 0
+    num_zero_params = 0
+    
+    for name, param in model.named_parameters():
+        if 'weight' in name:
+            num_params += np.prod(param.shape)
+            num_zero_params += np.count_nonzero(param.cpu().detach().numpy() == 0)
+    
+    sparsity = num_zero_params / num_params
+    
+    return sparsity
 
 
-if __name__ == '__main__':
-    main()  
-    subprocess.run(["python", "stop.py"])
+config_list = [{
+        'sparsity_per_layer' : 0.2,
+        'op_types' : ['Conv2d'],
+    }, {
+        'exclude' : True,
+        'op_names' : [
+                    'loc.0', 'loc.1', 'loc.2', 'loc.3', 'loc.4', 'loc.5',
+                    'conf.0', 'conf.1', 'conf.2', 'conf.3', 'conf.4', 'conf.5'
+                    ]
+    }]
+
+def iterative_pruning_finetuning(model, num_iterations=50):
+    for i in tqdm(range(0, num_iterations)):
+        print("Pruning and Finetuning {}/{}".format(i + 1, num_iterations))
+
+        print("Pruning...")
+#--------------------------------- PRUNING ------------------------------------
+        pruner = L1NormPruner(model, config_list)
+        pruner.compress()
+        pruner._unwrap_model() 
+        print('Pruning done')
+        calc(model)
+#--------------------------------- FINE TUNING ---------------------------------
+        print("Fine-tuning...")
+        train(model, i)
+        torch.save(model.state_dict(), './weights/G20/G20_{}.pth'.format(i))
+
+        pruned_model = build_extd('train', cfg.NUM_CLASSES)
+        pruned_model.load_state_dict(torch.load('./weights/G20/G20_{}.pth'.format(i)))
+        model = pruned_model
+        calc(model)
+
+    pruner = L1NormPruner(model, config_list)
+    pruner.compress()
+    pruner._unwrap_model()
+    torch.save(model.state_dict(), './weights/sfd_face_pruned_l1.pth')
+        
+    return model
+
+def main():
+    # dataset setting
+    print('prepare wider')
+    wider_data_file()
+
+    net = build_extd('train', cfg.NUM_CLASSES)
+    print('Load network....')
+    net.load_state_dict(torch.load('./weights/sfd_face.pth'), strict=True) #works also without strict=False
+    print('Base network weights loaded successfully.')
+
+    net = iterative_pruning_finetuning(model=net, num_iterations=50)
+
+    # torch.save(net.state_dict(), './weights/FINAL.pth')
+
+if __name__ == "__main__":
+    main()
