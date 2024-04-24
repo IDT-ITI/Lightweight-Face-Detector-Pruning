@@ -292,7 +292,7 @@ def val(epoch):
         global min_loss
         if tloss < min_loss:
             print('Saving best state,epoch', epoch)
-            file = 'sfd_default_script_{}.pth'.format(args.dataset)
+            file = 'sfd_{}_train.pth'.format(args.dataset)
             torch.save(s3fd_net.state_dict(), os.path.join(
                 args.save_folder, file))
             min_loss = tloss
@@ -301,7 +301,7 @@ def val(epoch):
             'epoch': epoch,
             'weight': s3fd_net.state_dict(),
         }
-        file = f'sfd_default_script_{epoch}_checkpoint.pth'
+        file = f'sfd_{args.dataset}_{epoch}_checkpoint.pth'
         torch.save(states, os.path.join(
             args.save_folder, file))
 
