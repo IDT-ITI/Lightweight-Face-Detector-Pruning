@@ -2,6 +2,8 @@
 
 Pruning Lightweight Face Detectors **EXTD** and **EResFD** using NNI's `FPGMPruner` and `L1NormPruner`.
 
+Repository updated in April 2024, for correction / completion of the paper-related materials, and for releasing scripts that facilitate the Android deployment of pruned EResFD models.
+
 ## Project Structure
 
 The repository is organized into 4 folders:
